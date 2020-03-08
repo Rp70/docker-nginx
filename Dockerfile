@@ -7,11 +7,23 @@ ENV NJS_VERSION   0.3.8
 ENV RTMP_VERSION 1.2.7
 ENV PKG_RELEASE   1
 
+ADD /files/ /
+
+RUN set -x && \
+    chmod +x /docker-entrypoint.sh
+
+# Reference: https://github.com/docker-library/php/blob/4b7da48c965c32148d028919e224d19cb14898db/7.4/alpine3.11/fpm/Dockerfile
+# ensure www-data user exists
+RUN set -eux; \
+	addgroup -g 82 -S www-data; \
+	adduser -u 82 -D -S -H -h /var/cache/nginx -s /sbin/nologin -g nginx -G www-data www-data
+# 82 is the standard uid/gid for "www-data" in Alpine
+# https://git.alpinelinux.org/aports/tree/main/apache2/apache2.pre-install?h=3.9-stable
+# https://git.alpinelinux.org/aports/tree/main/lighttpd/lighttpd.pre-install?h=3.9-stable
+# https://git.alpinelinux.org/aports/tree/main/nginx/nginx.pre-install?h=3.9-stable
+
 RUN set -x \
-# create nginx user/group first, to be consistent throughout docker variants
-    && addgroup -g 101 -S nginx \
-    && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx \
-    && apkArch="$(cat /etc/apk/arch)" \
+    apkArch="$(cat /etc/apk/arch)" \
     && nginxPackages=" \
         nginx=${NGINX_VERSION}-r${PKG_RELEASE} \
         nginx-module-xslt=${NGINX_VERSION}-r${PKG_RELEASE} \
@@ -62,11 +74,20 @@ RUN set -x && \
     exit 0
 
 
-ENV PAGESPEED_VERSION 1.13.35.2-stable
+ENV ACMESH_VERSION 2.8.5
 RUN set -x && \
-    mkdir /tmp/src/pagespeed && \
-    wget -q -O - https://github.com/apache/incubator-pagespeed-ngx/archive/v${PAGESPEED_VERSION}.tar.gz | tar -zx --strip=1 -C /tmp/src/pagespeed && \
+    mkdir /tmp/src/acmesh && \
+    wget -q -O - https://github.com/acmesh-official/acme.sh/archive/${ACMESH_VERSION}.tar.gz | tar -zx --strip=1 -C /tmp/src/acmesh && \
+    mkdir -p /var/www/le_root/.well-known/acme-challenge && \
+    chown -R root:www-data /var/www/le_root && \
     exit 0
+
+
+# ENV PAGESPEED_VERSION 1.13.35.2-stable
+# RUN set -x && \
+#     mkdir /tmp/src/pagespeed && \
+#     wget -q -O - https://github.com/apache/incubator-pagespeed-ngx/archive/v${PAGESPEED_VERSION}.tar.gz | tar -zx --strip=1 -C /tmp/src/pagespeed && \
+#     exit 0
 
 
 RUN set -x && \
@@ -196,4 +217,5 @@ EXPOSE 80
 
 STOPSIGNAL SIGTERM
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["startup"]
