@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -o errexit
+
+sudo -E docker-overwrite 1>/dev/null && \
+sudo nginx -t 1>/dev/null && \
+sudo nginx -s reload

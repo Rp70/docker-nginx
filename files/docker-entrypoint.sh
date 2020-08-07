@@ -36,40 +36,15 @@ else
 	fi
 fi
 
-for f in /docker-entrypoint-init.d/*.sh; do
-    . "$f"
-done
+# for f in /docker-entrypoint-init.d/*.sh; do
+#     . "$f"
+# done
+
+. /usr/bin/docker-overwrite
 
 if [ -e /entrypoint-hook-end.sh ]; then
 	. /entrypoint-hook-end.sh
 fi
-
-
-if [ "$ENVIRONMENT_REPLACE" != '' ]; then
-	SHELLFORMAT='';
-	for varname in `env | cut -d'='  -f 1`; do
-		SHELLFORMAT="\$$varname $SHELLFORMAT";
-	done
-	SHELLFORMAT="'$SHELLFORMAT'"
-	
-	for envfile in $ENVIRONMENT_REPLACE; do
-		echo "Replacing variables in $envfile"
-		for configfile in `find $envfile -type f ! -path '*~'`; do
-			echo $configfile
-			# This will mess files with escaped chars.
-			# It will mess: return 200 'User-Agent: *\nDisallow: /';
-			#content=`cat $configfile`
-			#echo "$content" | envsubst "$SHELLFORMAT" > $configfile
-			
-			# Temp file is slow but won't mess files with escaped chars.
-			cp -f $configfile /dev/shm/envsubst.tmp
-			envsubst "$SHELLFORMAT" < /dev/shm/envsubst.tmp > $configfile
-		done
-	done
-	
-	rm -f /dev/shm/envsubst.tmp
-fi
-
 
 if [ "$SUPERVISOR_ENABLE" -gt 0 ]; then
   exec supervisord --nodaemon;
