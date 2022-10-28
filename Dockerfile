@@ -7,6 +7,10 @@ ADD /files/ /
 RUN set -x && \
     chmod +x /docker-entrypoint.sh /usr/bin/docker-overwrite /usr/bin/docker-nginx-reload
 
+RUN apt-get update
+RUN set -ex && \
+    apt-get install -y wget
+
 ENV ACMESH_VERSION 2.8.5
 RUN set -x && \
     mkdir -p /tmp/src/acmesh && \
@@ -14,10 +18,10 @@ RUN set -x && \
     mkdir -p /var/www/le_root/.well-known/acme-challenge && \
     chown -R root:www-data /var/www/le_root
     
+RUN apt-get install -y supervisor cron
+
 RUN set -x && \
-    apt-get update && \
-    apt-get install -y supervisor cron && \
-    apt-get auto-remove && \
+    apt-get auto-remove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/**
 
