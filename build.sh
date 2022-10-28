@@ -1,2 +1,5 @@
 #!/usr/bin/env bash
-docker build --pull --tag nginx-custom . | tee tmp/build.log
+
+set -ex
+
+docker build --pull --tag rp70/nginx . | tee tmp/build.log
