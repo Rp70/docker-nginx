@@ -36,9 +36,9 @@ else
 	fi
 fi
 
-# for f in /docker-entrypoint-init.d/*.sh; do
-#     . "$f"
-# done
+for f in /docker-entrypoint-init.d/*.sh; do
+    . "$f"
+done
 
 . /usr/bin/docker-overwrite
 
