@@ -2,6 +2,6 @@
 
 set -o errexit
 
-sudo -E docker-overwrite 1>/dev/null && \
-sudo nginx -t 1>/dev/null && \
-sudo nginx -s reload
+docker-overwrite 1>/dev/null && \
+nginx -t 1>/dev/null && \
+nginx -s reload
